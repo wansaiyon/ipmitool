@@ -1,6 +1,7 @@
 language: C
 sudo: enabled
 before_script:
+ - echo PATH is [$PATH]
  - ./bootstrap
 addons:
   apt:
@@ -13,25 +14,62 @@ addons:
 
 matrix:
   include:
-    - os: linux
-      dist: xenial
-      addons:
-        apt:
-          packages:
-            - libsystemd-dev
+#    - os: linux
+#      dist: xenial
+#      addons:
+#        apt:
+#          packages:
+#            - libsystemd-dev
+#      script:
+#        - ./configure --enable-intf-dummy --enable-intf-dbus
+#        - make
+#        - sudo make install
+#    - os: linux
+#      dist: trusty
+#      script:
+#        - ./configure --enable-intf-dummy
+#        - make
+#        - sudo make install
+#    - os: osx
+#      osx_image: xcode10.2
+#      script:
+#        - ./configure --enable-intf-dummy
+#        - make
+#        - sudo make install
+    - os: windows
+      before_install:
+        - |-
+          [[ ! -f C:/tools/msys64/msys2_shell.cmd ]] && rm -rf C:/tools/msys64
+          choco uninstall -y mingw
+          choco upgrade --no-progress -y msys2
+          export msys2='cmd //C RefreshEnv.cmd '
+          export msys2+='& set MSYS=winsymlinks:nativestrict '
+          export msys2+='& C:\\tools\\msys64\\msys2_shell.cmd -defterm -no-start'
+          export mingw64="$msys2 -mingw64 -full-path -here -c "\"\$@"\" --"
+          export msys2+=" -msys2 -c "\"\$@"\" --"
+          $msys2 pacman --sync --noconfirm --needed mingw-w64-x86_64-toolchain
+          $msys2 pacman --sync --noconfirm --needed m4
+          $msys2 pacman --sync --noconfirm --needed autoconf
+          $msys2 pacman --sync --noconfirm --needed automake-wrapper
+          $msys2 pacman --sync --noconfirm --needed libtool
+          $msys2 pacman --sync --noconfirm --needed mingw-w64-libtool
+          $msys2 pacman --sync --noconfirm --needed readline
+          $msys2 pacman --sync --noconfirm --needed mingw-w64-readline
+          $msys2 pacman --sync --noconfirm --needed openssl 
+          $msys2 pacman --sync --noconfirm --needed mingw-w64-openssl 
+          ## Install more MSYS2 packages from https://packages.msys2.org/base here
+          taskkill //IM gpg-agent.exe //F  # https://travis-ci.community/t/4967
+          export PATH=/C/tools/msys64/mingw64/bin:/C/tools/msys64:$PATH
+          export MAKE=mingw32-make  # so that Autotools can find it
+
+      before_cache:
+        # https://unix.stackexchange.com/a/137322/107554
+        - $msys2 pacman --sync --clean --noconfirm
+
+      cache:
+        directories:
+        - $HOME/AppData/Local/Temp/chocolatey
+        - /C/tools/msys64
       script:
-        - ./configure --enable-intf-dummy --enable-intf-dbus
+        - ./configure IANADIR="./" IANAUSERDIR="./" DEFAULT_INTF="lanplus" --enable-intf-lan --enable-intf-lanplus --disable-intf-bmc --disable-intf-free --disable-intf-open --disable-intf-imb --disable-intf-usb --enable-intf-serial --enable-ipmishell
         - make
-        - sudo make install
-    - os: linux
-      dist: trusty
-      script:
-        - ./configure --enable-intf-dummy
-        - make
-        - sudo make install
-    - os: osx
-      osx_image: xcode10.2
-      script:
-        - ./configure --enable-intf-dummy
-        - make
-        - sudo make install
