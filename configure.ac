@@ -695,8 +695,8 @@ if test "x${DEFAULT_INTF}" == "x"; then
 fi
 
 xdefault_intf_is_enabled="xenable_intf_${DEFAULT_INTF}"
-if test "x${!xdefault_intf_is_enabled}" != "xyes"; then
-	AC_MSG_ERROR([** Cannot set ${DEFAULT_INTF} as default; ${DEFAULT_INTF} is not enabled. :${!xdefault_intf_is_enabled}:])
+if test "x"`eval "echo \\$${MY_ZZZ_INTF}"` != "xyes"; then
+	AC_MSG_ERROR([** Cannot set ${DEFAULT_INTF} as default; intf-${DEFAULT_INTF} is not enabled.])
 fi
 
 AC_ARG_VAR(IANADIR, [Configure the path to IANA PEN dictionary (default=DATAROOTDIR/misc)])
