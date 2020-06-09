@@ -13,35 +13,37 @@ addons:
 
 matrix:
   include:
-    - os: linux
-      dist: xenial
-      addons:
-        apt:
-          packages:
-            - libsystemd-dev
-      script:
-        - ./configure --enable-intf-dummy --enable-intf-dbus
-        - make
-        - sudo make install
-    - os: linux
-      dist: trusty
-      script:
-        - ./configure --enable-intf-dummy
-        - make
-        - sudo make install
-    - os: osx
-      osx_image: xcode10.2
-      script:
-        - ./configure --enable-intf-dummy
-        - make
-        - sudo make install
+#    - os: linux
+#      dist: xenial
+#      addons:
+#        apt:
+#          packages:
+#            - libsystemd-dev
+#      script:
+#        - ./configure --enable-intf-dummy --enable-intf-dbus
+#        - make
+#        - sudo make install
+#    - os: linux
+#      dist: trusty
+#      script:
+#        - ./configure --enable-intf-dummy
+#        - make
+#        - sudo make install
+#    - os: osx
+#      osx_image: xcode10.2
+#      script:
+#        - ./configure --enable-intf-dummy
+#        - make
+#        - sudo make install
     - os: windows
       before_install:
         - choco uninstall -y mingw
         - choco upgrade --no-progress -y cygwin
-        - ls -l /c/
-        - setup-x86.exe -q -P wget -P gcc-g++ -P make -P diffutils -P libmpfr-devel -P libgmp-devel -P libmpc-devel -P openssl-devel
+        - setup-x86.exe --disable-buggy-antivirus --upgrade-also --wait --arch="x86" --root="c:\tools\cygwin" --only-site --packages="wget,bash,p7zip,libssl-devel,git,gcc-core,make,diffutils,autoconf,automake,m4,libtool,libncurses-devel,libreadline-devel" --verbose --no-admin
+        - echo PATH is ${PATH}
+        - ls -R /c/tools/cygwin
+        - export PATH=$PATH:/c/tools/cygwin/bin:/c/tools/cygwin/usr/bin
       script:
-        - ./configure --enable-intf-lanplus
+        - ./configure IANADIR="./" IANAUSERDIR="./" DEFAULT_INTF="lanplus" --enable-intf-lan --enable-intf-lanplus --disable-intf-bmc --disable-intf-free --disable-intf-open --disable-intf-imb --disable-intf-usb --enable-intf-serial --enable-ipmishell
         - make
 
